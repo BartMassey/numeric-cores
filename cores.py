@@ -10,7 +10,7 @@ from partitions import partitions
 from permutations import permutations
 from roman import from_roman
 
-def compute_cores(operands):
+def compute_cores(operands, roman = False):
     assert len(operands) == 4
 
     def sub(a, b):
@@ -25,7 +25,7 @@ def compute_cores(operands):
         else:
             return None
     
-    cores = set()
+    found_cores = set()
     for p in permutations([(sub, "-"), (mult, "*"), (div, "/")]):
         t = operands[0]
         trace = f"{t}"
@@ -38,12 +38,15 @@ def compute_cores(operands):
             t = t0
             trace += f" {name} {operand}"
         if ok:
-            trace += f" = {t}"
-            cores.add((t, trace))
+            if len(str(t)) < 4:
+                trace += f" = {t}"
+                found_cores.add((t, trace))
+            elif not roman:
+                found_cores |= cores(str(t))
 
-    return cores
+    return found_cores
 
-def make_seq(digits, part, roman = False, leading_zeros = False):
+def make_seq(digits, part, roman=False, leading_zeros=False):
     result = []
     i = 0
     for n in part:
@@ -71,25 +74,26 @@ def cores(digits, roman=False):
     continuing = set()
     parts = partitions(ndigits, 4)
     for p in parts:
-        seq = make_seq(digits, p, roman)
-        for core, trace in compute_cores(seq):
+        s = make_seq(digits, p, roman=roman)
+        for core, trace in compute_cores(s):
             if core not in result | continuing:
                 result.add(core)
                 print(trace)
 
     return result
 
-def segmented(segments, roman = False):
+def segmented(segments, roman=False):
     if roman:
         s = [from_roman(seg) for seg in segments]
     else:
         s = [int(seg) for seg in segments]
             
-    return compute_cores(s)
+    print(s)
+    return compute_cores(s, roman=roman)
 
 if __name__ == "__main__":
     print("86455", cores("86455"))
     print("3614", cores("3614"))
     print("1213", cores("1213"))
 
-    print(segmented(["M", "CC", "XI", "II"], roman = True))
+    print(segmented(["M", "CC", "XI", "II"], roman=True))
