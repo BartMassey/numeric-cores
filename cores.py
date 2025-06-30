@@ -1,13 +1,14 @@
 #!/usr/bin/python
-# "Numeric cores" from BluePrince
-# Group the digits of a 4+-digit number
-# into four groups, then combine them
-# using the operators -,*,/ in arbitrary
-# order. The "numeric cores" are those
-# calculations that give a positive answer
+# Bart Massey 2025
+#
+# "Numeric cores" from BluePrince. Group the digits of a
+# 4+-digit number into four groups, then combine them using
+# the operators -,*,/ in arbitrary order. The "numeric
+# cores" are those calculations that give a positive answer.
 
 from partitions import partitions
 from permutations import permutations
+from roman import from_roman
 
 def compute_cores(operands):
     assert len(operands) == 4
@@ -42,25 +43,35 @@ def compute_cores(operands):
 
     return cores
 
-def make_seq(digits, part):
+def make_seq(digits, part, roman = False, leading_zeros = False):
     result = []
     i = 0
     for n in part:
-        result.append(int(digits[i:i+n]))
+        ds = digits[i:i+n]
+        if not leading_zeros and ds[0] == "0":
+            return None
+        if roman:
+            j = from_roman(ds)
+        else:
+            j = int(ds)
+        result.append(j)
         i += n
     return result
 
-def cores(digits):
+def cores(digits, roman=False):
     ndigits = len(digits)
     assert ndigits >= 4
     for d in digits:
-        assert d >= "1" and d <= "9"
+        if roman:
+            assert d in "MDCLXVI"
+        else:
+            assert d >= "0" and d <= "9"
     
     result = set()
     continuing = set()
     parts = partitions(ndigits, 4)
     for p in parts:
-        seq = make_seq(digits, p)
+        seq = make_seq(digits, p, roman)
         for core, trace in compute_cores(seq):
             if core not in result | continuing:
                 result.add(core)
@@ -68,14 +79,17 @@ def cores(digits):
 
     return result
 
-def roman():
-    for core, trace in compute_cores([1000, 200, 11, 2]):
-        print(core, trace)
+def segmented(segments, roman = False):
+    if roman:
+        s = [from_roman(seg) for seg in segments]
+    else:
+        s = [int(seg) for seg in segments]
+            
+    return compute_cores(s)
 
 if __name__ == "__main__":
     print("86455", cores("86455"))
     print("3614", cores("3614"))
     print("1213", cores("1213"))
 
-    print()
-    roman()
+    print(segmented(["M", "CC", "XI", "II"], roman = True))
