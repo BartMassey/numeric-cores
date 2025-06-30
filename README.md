@@ -1,7 +1,8 @@
 # numeric-cores: BluePrince puzzle
 Bart Massey 2025
 
-"Numeric cores" from [BluePrince](https://www.blueprincegame.com/).
+"Numeric cores" [puzzle](https://blue-prince.fandom.com/wiki/Numeric_Core)
+from [BluePrince](https://www.blueprincegame.com/).
 
 Group the digits of a 4-or-more-digit number into four
 groups, then combine them using the operators -, *, / in
@@ -11,9 +12,8 @@ a well-defined answer: all steps positive, with division by
 a positive number and producing an integer.
 
 This solver assumes no zero digits in the input, as things
-get confusing otherwise. Roman numerals are a work in
-progress. There is currently no CLI: just edit the code for
-now.
+get confusing otherwise. Roman numerals are available but
+a bit fragile.
 
 # Acknowledgments
 

@@ -6,9 +6,17 @@
 # the operators -,*,/ in arbitrary order. The "numeric
 # cores" are those calculations that give a positive answer.
 
+import argparse
 from partitions import partitions
 from permutations import permutations
 from roman import from_roman
+
+ap = argparse.ArgumentParser()
+ap.add_argument("--roman", action="store_true", help="source is roman numeral")
+ap.add_argument("--segmented", action="store_true", help="source is pre-segmented")
+ap.add_argument("--cores", action="store_true", help="just show cores")
+ap.add_argument("start", nargs="*", help="starting point for core")
+args = ap.parse_args()
 
 def compute_cores(operands, roman = False):
     assert len(operands) == 4
@@ -77,8 +85,7 @@ def cores(digits, roman=False):
         s = make_seq(digits, p, roman=roman)
         for core, trace in compute_cores(s):
             if core not in result | continuing:
-                result.add(core)
-                print(trace)
+                result.add((core, trace))
 
     return result
 
@@ -88,12 +95,30 @@ def segmented(segments, roman=False):
     else:
         s = [int(seg) for seg in segments]
             
-    print(s)
     return compute_cores(s, roman=roman)
 
-if __name__ == "__main__":
+def show_tests():
     print("86455", cores("86455"))
+    print()
     print("3614", cores("3614"))
+    print()
     print("1213", cores("1213"))
-
+    print()
     print(segmented(["M", "CC", "XI", "II"], roman=True))
+
+if args.segmented:
+    if len(args.start) != 4:
+        print("error: expected 4 segments", file=stdout)
+        exit(1)
+    run = segmented(args.start, args.roman)
+else:
+    if len(args.start) != 1:
+        print("error: expected one core", file=stdout)
+        exit(1)
+    run = cores(args.start[0], args.roman)
+    
+for c, t in run:
+    if args.cores:
+        print(c)
+    else:
+        print(t)
