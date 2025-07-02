@@ -34,16 +34,16 @@ else:
     exit(1)
 
 roman_digits = "MDCLXVI"
-roman = False
+is_roman = False
 for a in args.start:
     for d in a:
         if d in roman_digits:
-            roman = True
+            is_roman = True
             break
-    if roman:
+    if is_roman:
         break
 
-def compute_cores(start, operands, roman = False, pretrace=""):
+def compute_cores(start, operands, recurse=True, pretrace=""):
     assert len(operands) == 4
 
     def sub(a, b):
@@ -76,27 +76,21 @@ def compute_cores(start, operands, roman = False, pretrace=""):
             trace += f"; Core = {t}"
             if len(str(t)) < 4:
                 result.add((t, trace))
-            elif not roman:
+            elif recurse:
                 result |= cores(str(t), pretrace=trace)
 
     return result
 
-def make_seq(digits, part, roman=False, leading_zeros=False):
+def make_seq(digits, part):
     result = []
     i = 0
     for n in part:
         ds = digits[i:i+n]
-        if not leading_zeros and ds[0] == "0":
-            return None
-        if roman:
-            j = from_roman(ds)
-        else:
-            j = int(ds)
-        result.append(j)
+        result.append(ds)
         i += n
     return result
 
-def cores(digits, roman=False, pretrace=""):
+def cores(digits, roman=False, recurse=True, pretrace=""):
     ndigits = len(digits)
     assert ndigits >= 4
     for d in digits:
@@ -104,19 +98,26 @@ def cores(digits, roman=False, pretrace=""):
             assert d in roman_digits
         else:
             assert d >= "0" and d <= "9"
-    # XXX don't mangle the default parameter. ♥ you Python.
-    roman = roman
     
     result = set()
     parts = partitions(ndigits, 4)
     for p in parts:
-        s = make_seq(digits, p, roman=roman)
+        xs = make_seq(digits, p)
+        if roman:
+            s = [from_roman(ds) for ds in xs]
+        else:
+            s = [int(ds) for ds in xs]
         if not s:
             continue
-        for core, trace in compute_cores(digits, s, pretrace=pretrace):
+        candidates = compute_cores(
+            digits,
+            s,
+            pretrace=pretrace,
+            recurse=recurse,
+        )
+        for core, trace in candidates:
             if core not in result:
                 result.add((core, trace))
-        roman = False
 
     return result
 
@@ -131,27 +132,18 @@ def segmented_cores(segments, roman=False):
     else:
         s = [int(seg) for seg in segments]
             
-    return compute_cores(''.join(segments), s, roman=roman)
-
-def smoke_tests():
-    print("86455", cores("86455"))
-    print()
-    print("3614", cores("3614"))
-    print()
-    print("1213", cores("1213"))
-    print()
-    print(segmented(["M", "CC", "XI", "II"], roman=True))
+    return compute_cores(' '.join(segments), s, recurse=False)
 
 if segmented:
     if len(args.start) != 4:
         print("error: expected 4 segments", file=stderr)
         exit(1)
-    run = segmented_cores(args.start, roman=roman)
+    run = segmented_cores(args.start, roman=is_roman)
 else:
     if len(args.start) != 1:
         print("error: expected one core", file=stderr)
         exit(1)
-    run = cores(args.start[0], roman=roman)
+    run = cores(args.start[0], roman=is_roman, recurse=not is_roman)
     
 if args.all_cores:
     if run:

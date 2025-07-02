@@ -11,9 +11,8 @@ found.  The "numeric core" is the calculation that gives the
 smallest positive integer, without division by zero at any
 point.
 
-This solver assumes no zero digits in the input, as things
-get confusing otherwise. Roman numerals are available
-(because reasons) but a bit fragile.
+Roman numerals are available (because reasons). No iteration
+will be done when finding Roman cores.
 
 Run with `python cores.py --help` in the repo directory to
 see the possible arguments, then proceed accordingly. Known
