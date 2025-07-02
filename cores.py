@@ -16,7 +16,6 @@ from roman import from_roman
 from sys import stderr
 
 ap = argparse.ArgumentParser()
-ap.add_argument("--roman", action="store_true", help="source is roman numeral")
 ap.add_argument("--cores", action="store_true", help="just show core(s)")
 ap.add_argument("--all-cores", action="store_true", help="show all cores")
 ap.add_argument(
@@ -33,6 +32,16 @@ elif nstart == 4:
 else:
     print("start argument must be either 1 or 4 numbers", file=stderr)
     exit(1)
+
+roman_digits = "MDCLXVI"
+roman = False
+for a in args.start:
+    for d in a:
+        if d in roman_digits:
+            roman = True
+            break
+    if roman:
+        break
 
 def compute_cores(start, operands, roman = False, pretrace=""):
     assert len(operands) == 4
@@ -92,7 +101,7 @@ def cores(digits, roman=False, pretrace=""):
     assert ndigits >= 4
     for d in digits:
         if roman:
-            assert d in "MDCLXVI"
+            assert d in roman_digits
         else:
             assert d >= "0" and d <= "9"
     # XXX don't mangle the default parameter. ♥ you Python.
@@ -137,12 +146,12 @@ if segmented:
     if len(args.start) != 4:
         print("error: expected 4 segments", file=stderr)
         exit(1)
-    run = segmented_cores(args.start, roman=args.roman)
+    run = segmented_cores(args.start, roman=roman)
 else:
     if len(args.start) != 1:
         print("error: expected one core", file=stderr)
         exit(1)
-    run = cores(args.start[0], roman=args.roman)
+    run = cores(args.start[0], roman=roman)
     
 if args.all_cores:
     if run:
