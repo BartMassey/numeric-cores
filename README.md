@@ -6,10 +6,10 @@ from [BluePrince](https://www.blueprincegame.com/).
 
 Group the digits of a 4-or-more-digit number into four
 groups, then combine them using the operators -, *, / in
-arbitrary order. Iterate until a 3-or-less-digit number is
-found.  The "numeric core" is the calculation that gives the
-smallest positive integer, without division by zero at any
-point.
+arbitrary order. The "numeric core" is the calculation that
+gives the smallest positive integer, without division by
+zero at any point. If no 3-or-less-digit core is found,
+iterate on the smallest current core.
 
 Roman numerals are available (because reasons). No iteration
 will be done when finding Roman cores.

@@ -43,7 +43,7 @@ for a in args.start:
     if is_roman:
         break
 
-def compute_cores(start, operands, recurse=True, pretrace=""):
+def compute_cores(start, operands, pretrace=""):
     assert len(operands) == 4
 
     def sub(a, b):
@@ -74,10 +74,7 @@ def compute_cores(start, operands, recurse=True, pretrace=""):
         if ok and Fraction(t).denominator == 1 and t > 0:
             t = int(t)
             trace += f"; Core = {t}"
-            if len(str(t)) < 4:
-                result.add((t, trace))
-            elif recurse:
-                result |= cores(str(t), pretrace=trace)
+            result.add((t, trace))
 
     return result
 
@@ -90,7 +87,12 @@ def make_seq(digits, part):
         i += n
     return result
 
-def cores(digits, roman=False, recurse=True, pretrace=""):
+def min_core(cs):
+    if cs:
+        return min(cs, key=lambda x: x[0])
+    return None
+
+def cores(digits, roman=False, pretrace=""):
     ndigits = len(digits)
     assert ndigits >= 4
     for d in digits:
@@ -113,18 +115,19 @@ def cores(digits, roman=False, recurse=True, pretrace=""):
             digits,
             s,
             pretrace=pretrace,
-            recurse=recurse,
         )
         for core, trace in candidates:
             if core not in result:
                 result.add((core, trace))
 
-    return result
+    m = min_core(result)
+    if m:
+        core, trace = m
+        s = str(core)
+        if len(s) >= 4:
+            result |= cores(s, pretrace=trace)
 
-def min_core(cs):
-    if cs:
-        return min(cs, key=lambda x: x[0])
-    return None
+    return result
 
 def segmented_cores(segments, roman=False):
     if roman:
@@ -132,7 +135,7 @@ def segmented_cores(segments, roman=False):
     else:
         s = [int(seg) for seg in segments]
             
-    return compute_cores(' '.join(segments), s, recurse=False)
+    return compute_cores(' '.join(segments), s)
 
 if segmented:
     if len(args.start) != 4:
@@ -143,7 +146,7 @@ else:
     if len(args.start) != 1:
         print("error: expected one core", file=stderr)
         exit(1)
-    run = cores(args.start[0], roman=is_roman, recurse=not is_roman)
+    run = cores(args.start[0], roman=is_roman)
     
 if args.all_cores:
     if run:
