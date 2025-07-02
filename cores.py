@@ -60,9 +60,10 @@ def compute_cores(start, operands, pretrace=""):
     result = set()
     for p in permutations([(sub, "-"), (mult, "*"), (div, "÷")]):
         t = operands[0]
-        trace = f"{start}: {t}"
         if pretrace:
-            trace = f"{pretrace} → {trace}"
+            trace = f"{pretrace} → {t}"
+        else:
+            trace = f"{start}: {t}"
         ok = True
         for (op, name), operand in zip(p, operands[1:]):
             t0 = op(t, operand)
