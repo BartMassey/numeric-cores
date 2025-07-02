@@ -16,7 +16,8 @@ get confusing otherwise. Roman numerals are available
 (because reasons) but a bit fragile.
 
 Run with `python cores.py --help` in the repo directory to
-see the possible arguments, then proceed accordingly.
+see the possible arguments, then proceed accordingly. Known
+to work with Python 3.10 or later.
 
 # Acknowledgments
 
