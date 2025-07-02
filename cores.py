@@ -17,11 +17,22 @@ from sys import stderr
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--roman", action="store_true", help="source is roman numeral")
-ap.add_argument("--segmented", action="store_true", help="source is pre-segmented")
 ap.add_argument("--cores", action="store_true", help="just show core(s)")
 ap.add_argument("--all-cores", action="store_true", help="show all cores")
-ap.add_argument("start", nargs="*", help="starting point for core")
+ap.add_argument(
+    "start",
+    nargs="*",
+    help="starting point for core: 1 or 4 numbers"
+)
 args = ap.parse_args()
+nstart = len(args.start)
+if nstart == 1:
+    segmented = False
+elif nstart == 4:
+    segmented = True
+else:
+    print("start argument must be either 1 or 4 numbers", file=stderr)
+    exit(1)
 
 def compute_cores(start, operands, roman = False, pretrace=""):
     assert len(operands) == 4
@@ -120,7 +131,7 @@ def smoke_tests():
     print()
     print(segmented(["M", "CC", "XI", "II"], roman=True))
 
-if args.segmented:
+if segmented:
     if len(args.start) != 4:
         print("error: expected 4 segments", file=stderr)
         exit(1)
