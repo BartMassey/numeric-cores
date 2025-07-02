@@ -1,10 +1,12 @@
 #!/usr/bin/python
 # Bart Massey 2025
 #
-# "Numeric cores" from BluePrince. Group the digits of a
+# "Numeric core" from BluePrince. Group the digits of a
 # 4+-digit number into four groups, then combine them using
-# the operators -,*,/ in arbitrary order. The "numeric
-# cores" are those calculations that give a positive answer.
+# the operators -,*,/ in arbitrary order. If a positive
+# integer of four or more digits is produced, iterate the
+# process. The "numeric core" is the calculations that give
+# the smallest positive integer answer.
 
 import argparse
 from fractions import Fraction
@@ -20,7 +22,7 @@ ap.add_argument("--all-cores", action="store_true", help="show all cores")
 ap.add_argument("start", nargs="*", help="starting point for core")
 args = ap.parse_args()
 
-def compute_cores(operands, roman = False):
+def compute_cores(start, operands, roman = False, pretrace=""):
     assert len(operands) == 4
 
     def sub(a, b):
@@ -35,9 +37,11 @@ def compute_cores(operands, roman = False):
         return None
     
     found_cores = set()
-    for p in permutations([(sub, "-"), (mult, "*"), (div, "/")]):
+    for p in permutations([(sub, "-"), (mult, "*"), (div, "÷")]):
         t = operands[0]
-        trace = f"{t}"
+        trace = f"{start}: {t}"
+        if pretrace:
+            trace = f"{pretrace}, {trace}"
         ok = True
         for (op, name), operand in zip(p, operands[1:]):
             t0 = op(t, operand)
@@ -49,7 +53,7 @@ def compute_cores(operands, roman = False):
         if ok and t.is_integer() and t > 0:
             t = int(t)
             if len(str(t)) < 4:
-                trace += f" = {t}"
+                trace += f"; Core = {t}"
                 found_cores.add((t, trace))
             elif not roman:
                 found_cores |= cores(str(t))
@@ -85,7 +89,9 @@ def cores(digits, roman=False):
     parts = partitions(ndigits, 4)
     for p in parts:
         s = make_seq(digits, p, roman=roman)
-        for core, trace in compute_cores(s):
+        if not s:
+            continue
+        for core, trace in compute_cores(digits, s):
             if core not in result | continuing:
                 result.add((core, trace))
 
@@ -102,7 +108,7 @@ def segmented_cores(segments, roman=False):
     else:
         s = [int(seg) for seg in segments]
             
-    return compute_cores(s, roman=roman)
+    return compute_cores(''.join(segments), s, roman=roman)
 
 def smoke_tests():
     print("86455", cores("86455"))
