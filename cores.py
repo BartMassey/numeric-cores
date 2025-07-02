@@ -51,7 +51,7 @@ def compute_cores(start, operands, roman = False, pretrace=""):
                 break
             t = t0
             trace += f", {name} {operand}"
-        if ok and t.is_integer() and t > 0:
+        if ok and Fraction(t).denominator == 1 and t > 0:
             t = int(t)
             if len(str(t)) < 4:
                 trace += f"; Core = {t}"
