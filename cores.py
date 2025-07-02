@@ -13,6 +13,7 @@ from fractions import Fraction
 from partitions import partitions
 from permutations import permutations
 from roman import from_roman
+from sys import stderr
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--roman", action="store_true", help="source is roman numeral")
@@ -121,12 +122,12 @@ def smoke_tests():
 
 if args.segmented:
     if len(args.start) != 4:
-        print("error: expected 4 segments", file=stdout)
+        print("error: expected 4 segments", file=stderr)
         exit(1)
     run = segmented_cores(args.start, roman=args.roman)
 else:
     if len(args.start) != 1:
-        print("error: expected one core", file=stdout)
+        print("error: expected one core", file=stderr)
         exit(1)
     run = cores(args.start[0], roman=args.roman)
     
