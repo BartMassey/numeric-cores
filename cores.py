@@ -48,12 +48,12 @@ def compute_cores(start, operands, roman = False, pretrace=""):
             return Fraction(a) / Fraction(b)
         return None
     
-    found_cores = set()
+    result = set()
     for p in permutations([(sub, "-"), (mult, "*"), (div, "÷")]):
         t = operands[0]
         trace = f"{start}: {t}"
         if pretrace:
-            trace = f"{pretrace}, {trace}"
+            trace = f"{pretrace} → {trace}"
         ok = True
         for (op, name), operand in zip(p, operands[1:]):
             t0 = op(t, operand)
@@ -64,13 +64,13 @@ def compute_cores(start, operands, roman = False, pretrace=""):
             trace += f", {name} {operand}"
         if ok and Fraction(t).denominator == 1 and t > 0:
             t = int(t)
+            trace += f"; Core = {t}"
             if len(str(t)) < 4:
-                trace += f"; Core = {t}"
-                found_cores.add((t, trace))
+                result.add((t, trace))
             elif not roman:
-                found_cores |= cores(str(t))
+                result |= cores(str(t), pretrace=trace)
 
-    return found_cores
+    return result
 
 def make_seq(digits, part, roman=False, leading_zeros=False):
     result = []
@@ -87,7 +87,7 @@ def make_seq(digits, part, roman=False, leading_zeros=False):
         i += n
     return result
 
-def cores(digits, roman=False):
+def cores(digits, roman=False, pretrace=""):
     ndigits = len(digits)
     assert ndigits >= 4
     for d in digits:
@@ -95,17 +95,19 @@ def cores(digits, roman=False):
             assert d in "MDCLXVI"
         else:
             assert d >= "0" and d <= "9"
+    # XXX don't mangle the default parameter. ♥ you Python.
+    roman = roman
     
     result = set()
-    continuing = set()
     parts = partitions(ndigits, 4)
     for p in parts:
         s = make_seq(digits, p, roman=roman)
         if not s:
             continue
-        for core, trace in compute_cores(digits, s):
-            if core not in result | continuing:
+        for core, trace in compute_cores(digits, s, pretrace=pretrace):
+            if core not in result:
                 result.add((core, trace))
+        roman = False
 
     return result
 
