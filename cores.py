@@ -7,6 +7,7 @@
 # cores" are those calculations that give a positive answer.
 
 import argparse
+from fractions import Fraction
 from partitions import partitions
 from permutations import permutations
 from roman import from_roman
@@ -14,7 +15,8 @@ from roman import from_roman
 ap = argparse.ArgumentParser()
 ap.add_argument("--roman", action="store_true", help="source is roman numeral")
 ap.add_argument("--segmented", action="store_true", help="source is pre-segmented")
-ap.add_argument("--cores", action="store_true", help="just show cores")
+ap.add_argument("--cores", action="store_true", help="just show core(s)")
+ap.add_argument("--all-cores", action="store_true", help="show all cores")
 ap.add_argument("start", nargs="*", help="starting point for core")
 args = ap.parse_args()
 
@@ -28,10 +30,9 @@ def compute_cores(operands, roman = False):
         return a * b
 
     def div(a, b):
-        if a % b == 0:
-            return a // b
-        else:
-            return None
+        if b != 0:
+            return Fraction(a) / Fraction(b)
+        return None
     
     found_cores = set()
     for p in permutations([(sub, "-"), (mult, "*"), (div, "/")]):
@@ -40,12 +41,13 @@ def compute_cores(operands, roman = False):
         ok = True
         for (op, name), operand in zip(p, operands[1:]):
             t0 = op(t, operand)
-            if not t0 or t0 <= 0:
+            if not t0:
                 ok = False
                 break
             t = t0
-            trace += f" {name} {operand}"
-        if ok:
+            trace += f", {name} {operand}"
+        if ok and t.is_integer() and t > 0:
+            t = int(t)
             if len(str(t)) < 4:
                 trace += f" = {t}"
                 found_cores.add((t, trace))
@@ -89,7 +91,12 @@ def cores(digits, roman=False):
 
     return result
 
-def segmented(segments, roman=False):
+def min_core(cs):
+    if cs:
+        return min(cs, key=lambda x: x[0])
+    return None
+
+def segmented_cores(segments, roman=False):
     if roman:
         s = [from_roman(seg) for seg in segments]
     else:
@@ -97,7 +104,7 @@ def segmented(segments, roman=False):
             
     return compute_cores(s, roman=roman)
 
-def show_tests():
+def smoke_tests():
     print("86455", cores("86455"))
     print()
     print("3614", cores("3614"))
@@ -110,15 +117,28 @@ if args.segmented:
     if len(args.start) != 4:
         print("error: expected 4 segments", file=stdout)
         exit(1)
-    run = segmented(args.start, args.roman)
+    run = segmented_cores(args.start, roman=args.roman)
 else:
     if len(args.start) != 1:
         print("error: expected one core", file=stdout)
         exit(1)
-    run = cores(args.start[0], args.roman)
+    run = cores(args.start[0], roman=args.roman)
     
-for c, t in run:
-    if args.cores:
-        print(c)
+if args.all_cores:
+    if run:
+        for c, t in run:
+            if args.cores:
+                print(c)
+            else:
+                print(t)
     else:
-        print(t)
+        print("no cores")
+else:
+    core = min_core(run)
+    if core:
+        if args.cores:
+            print(core[0])
+        else:
+            print(core[1])
+    else:
+        print("no core")
